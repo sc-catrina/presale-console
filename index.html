@@ -32,7 +32,12 @@
   .muted{color:var(--muted)}
   .tzhint{font-size:12px;color:var(--muted);margin-top:8px}
   .assets{font-size:13px;color:var(--muted)}
-  .assets a{display:inline-block;margin:2px 0}
+  .asset{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .asset a{flex:1;min-width:0}
+  .assetcopy{background:var(--chip);border:1px solid var(--line);color:var(--muted);border-radius:6px;
+    padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap}
+  .assetcopy:hover{color:var(--accent);border-color:var(--accent)}
+  .assetcopy.ok{color:var(--accent2);border-color:var(--accent2)}
   a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
   .note{font-size:12.5px;color:var(--muted);background:var(--panel2);border:1px dashed var(--line);
     border-radius:9px;padding:11px 13px;margin-top:10px}
@@ -124,9 +129,9 @@
   <div class="card">
     <h2>Presale assets (FU 1)</h2>
     <div class="assets">
-      <a href="https://youtu.be/7xQJj9frQ0Q" target="_blank" rel="noopener">▶ Pre-call video (what we offer)</a><br>
-      <a href="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4" target="_blank" rel="noopener">▶ Todd's Results After Full System Setup</a><br>
-      <a href="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376" target="_blank" rel="noopener">▶ Quick Revenue Wins From Operational Changes</a>
+      <div class="asset"><a href="https://youtu.be/7xQJj9frQ0Q" target="_blank" rel="noopener">▶ Pre-call video (what we offer)</a><button class="assetcopy" data-url="https://youtu.be/7xQJj9frQ0Q" title="Copy link">⧉ Copy</button></div>
+      <div class="asset"><a href="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4" target="_blank" rel="noopener">▶ Todd's Results After Full System Setup</a><button class="assetcopy" data-url="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4" title="Copy link">⧉ Copy</button></div>
+      <div class="asset"><a href="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376" target="_blank" rel="noopener">▶ Quick Revenue Wins From Operational Changes</a><button class="assetcopy" data-url="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376" title="Copy link">⧉ Copy</button></div>
     </div>
     <div class="note">Warm, already-booked prospects, so link-sends are lower risk — but still space them out and type the opener rather than pasting a wall. Don't blast all three the second they book.</div>
   </div>
@@ -142,6 +147,11 @@
       <span><i class="dot fu1"></i>FU1 · presale video</span>
       <span><i class="dot fu2"></i>FU2 · confirm</span>
       <span><i class="dot fu3"></i>FU3 · 2h reminder</span>
+    </div>
+    <div style="margin:12px 0 2px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <button id="alertBtn" class="rowcopy" type="button">🔔 Enable alerts</button>
+      <label style="font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="soundChk" checked style="width:auto;margin:0"> alarm sound</label>
+      <span id="alertStatus" class="tzhint" style="margin:0"></span>
     </div>
     <div id="agenda"></div>
   </div>
@@ -342,8 +352,61 @@ document.getElementById('add').addEventListener('click',()=>{
 function saveBookings(){try{localStorage.setItem('marcel_precall_v1',JSON.stringify({bookings:bookings,seq:seq}));}catch(e){}}
 function loadBookings(){try{const s=localStorage.getItem('marcel_precall_v1'); if(s){const o=JSON.parse(s); bookings=(o.bookings||[]); seq=o.seq||1;}}catch(e){}}
 loadBookings();
+
+// ---- alerts / alarm (works while this tab is open) ----
+let alerted=new Set();
+try{const a=localStorage.getItem('marcel_precall_alerted'); if(a) alerted=new Set(JSON.parse(a));}catch(e){}
+function saveAlerted(){try{localStorage.setItem('marcel_precall_alerted',JSON.stringify([...alerted]));}catch(e){}}
+let audioCtx=null;
+function beep(){ const chk=document.getElementById('soundChk'); if(chk&&!chk.checked) return;
+  try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const t0=audioCtx.currentTime;
+    for(let i=0;i<3;i++){ const o=audioCtx.createOscillator(), g=audioCtx.createGain(); const s=t0+i*0.45;
+      o.type='sine'; o.frequency.value=880;
+      g.gain.setValueAtTime(0.0001,s); g.gain.exponentialRampToValueAtTime(0.35,s+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,s+0.35);
+      o.connect(g); g.connect(audioCtx.destination); o.start(s); o.stop(s+0.37); }
+  }catch(e){}
+}
+function notify(title,body){
+  if('Notification' in window && Notification.permission==='granted'){ try{new Notification(title,{body:body});}catch(e){} }
+  beep();
+}
+function updateAlertStatus(){
+  const el=document.getElementById('alertStatus');
+  if(!('Notification' in window)){ el.textContent='Notifications not supported here — alarm sound still works.'; return; }
+  if(Notification.permission==='granted') el.textContent='Alerts ON — notification + sound when a send is due (while this tab stays open).';
+  else if(Notification.permission==='denied') el.textContent='Notifications blocked — only the alarm sound plays. Allow them in the site settings for pop-ups.';
+  else el.textContent='Click “Enable alerts” to allow pop-up notifications.';
+}
+document.getElementById('alertBtn').addEventListener('click',()=>{
+  try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}
+  if('Notification' in window && Notification.permission!=='granted'){ Notification.requestPermission().then(updateAlertStatus); }
+  beep(); updateAlertStatus();
+});
+function checkDue(silent){
+  const now=new Date();
+  buildEvents().forEach(e=>{ const key='a'+e.booking.id+'_'+e.fu;
+    if(e.realAt<=now && !alerted.has(key)){ alerted.add(key);
+      if(!silent){ const N=e.booking.name||'(no name)';
+        notify('Pre-call send due — '+N, 'Send FU'+e.fu+' now · '+(e.booking.platform==='IG'?'Instagram':'Facebook')+' · '+e.track); }
+    }
+  });
+  saveAlerted();
+}
+
+updateAlertStatus();
 render();
-setInterval(render, 60000); // refresh "due now" every minute
+checkDue(true); // seed already-due sends silently on load
+setInterval(function(){ render(); checkDue(false); }, 30000); // refresh + alarm check every 30s
+
+// copy buttons for the presale asset links
+document.querySelectorAll('.assetcopy').forEach(b=>b.addEventListener('click',()=>{
+  const o=b.textContent; navigator.clipboard.writeText(b.dataset.url).then(()=>{
+    b.textContent='Copied ✓'; b.classList.add('ok'); setTimeout(()=>{b.textContent=o;b.classList.remove('ok');},1200);
+  }).catch(()=>{});
+}));
 </script>
 </body>
 </html>
