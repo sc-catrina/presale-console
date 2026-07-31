@@ -203,16 +203,15 @@ function tracksFor(b){
     {label:'Message 1',text:"Hey "+N+", quick reminder, we have our call within 2 hours, here's the link for you to join: "+L},
     {label:'Message 2',text:"Don't forget to show up on time so we can start our call on your laptop."},
     {label:'Message 3',text:"If there's anything else you need, feel free to let me know"}];
+  const fu2=[{label:'Message 1',text:"Hey "+N+", just to confirm, are we having the call at "+t+" PT?"}];
   let fus;
   if(trackB){
     fus=[{fu:1,off:24,asap:true,msgs:fu1},
-      {fu:2,off:12,msgs:[{label:'Message 1',text:"Hey "+N+", just to confirm, are we having the call at "+t+" PT?"},
-        {label:'Message 2',text:"Also one note, make sure to show up on the call prepared on your laptop so you can take all the notes as we go on our call."}]},
+      {fu:2,off:12,msgs:fu2},
       {fu:3,off:2,msgs:fu3}];
   } else {
     fus=[{fu:1,off:36,msgs:fu1},
-      {fu:2,off:24,msgs:[{label:'Message 1',text:"Hey brother, on a scale of 1-10, how good is the time we have scheduled for your call?"},
-        {label:'Message 2',text:"If there's any chance you might not make it, just let me know, I'm happy to find a time that works better for you."}]},
+      {fu:2,off:12,msgs:fu2},
       {fu:3,off:2,msgs:fu3}];
   }
   return {call,track:trackB?'B':'A',fus};
