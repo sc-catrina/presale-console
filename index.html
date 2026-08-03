@@ -7,7 +7,7 @@
 <style>
   :root{--bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--line:#2a2f3a;--ink:#e8eaed;
     --muted:#9aa2b1;--accent:#4f9dff;--accent2:#37c99a;--warn:#f0a54a;--danger:#ff6b6b;--chip:#242a35;
-    --fu1:#4f9dff;--fu2:#37c99a;--fu3:#f0a54a;}
+    --fu1:#4f9dff;--fu2:#37c99a;--fu3:#f0a54a;--fu4:#a78bfa;}
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -57,7 +57,7 @@
   .ev .body{flex:1;min-width:0}
   .ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .fubadge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;color:#05130d}
-  .fu1{background:var(--fu1)}.fu2{background:var(--fu2)}.fu3{background:var(--fu3)}
+  .fu1{background:var(--fu1)}.fu2{background:var(--fu2)}.fu3{background:var(--fu3)}.fu4{background:var(--fu4)}
   .who{font-weight:600;font-size:14px}
   .pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px}
   .pill-ig{background:#3a1f3d;color:#e79ff0;border:1px solid #5a3060}
@@ -130,7 +130,7 @@
     <h2>Presale assets (FU 1)</h2>
     <div class="assets">
       <div class="asset"><a href="https://youtu.be/7xQJj9frQ0Q" target="_blank" rel="noopener">▶ Pre-call video (what we offer)</a><button class="assetcopy" data-url="https://youtu.be/7xQJj9frQ0Q" title="Copy link">⧉ Copy</button></div>
-      <div class="asset"><a href="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4" target="_blank" rel="noopener">▶ Todd's Results After Full System Setup</a><button class="assetcopy" data-url="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4" title="Copy link">⧉ Copy</button></div>
+      <div class="asset"><a href="https://www.loom.com/share/c272f048065c450183b50fe40593777c" target="_blank" rel="noopener">▶ Todd's Results After Full System Setup</a><button class="assetcopy" data-url="https://www.loom.com/share/c272f048065c450183b50fe40593777c" title="Copy link">⧉ Copy</button></div>
       <div class="asset"><a href="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376" target="_blank" rel="noopener">▶ Quick Revenue Wins From Operational Changes</a><button class="assetcopy" data-url="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376" title="Copy link">⧉ Copy</button></div>
     </div>
     <div class="note">Warm, already-booked prospects, so link-sends are lower risk — but still space them out and type the opener rather than pasting a wall. Don't blast all three the second they book.</div>
@@ -147,6 +147,7 @@
       <span><i class="dot fu1"></i>FU1 · presale video</span>
       <span><i class="dot fu2"></i>FU2 · confirm</span>
       <span><i class="dot fu3"></i>FU3 · 2h reminder</span>
+      <span><i class="dot fu4"></i>FU4 · call link</span>
     </div>
     <div style="margin:12px 0 2px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <button id="alertBtn" class="rowcopy" type="button">🔔 Enable alerts</button>
@@ -166,7 +167,7 @@
 
 <script>
 const V="https://youtu.be/7xQJj9frQ0Q";
-const TODD="https://www.loom.com/share/01680451e76c46238a9b6a109b6946d4";
+const TODD="https://www.loom.com/share/c272f048065c450183b50fe40593777c";
 const WINS="https://www.loom.com/share/fb56890fa13f45fdab47ccb642b77376";
 const PT="America/Los_Angeles", PH="Asia/Manila";
 
@@ -197,23 +198,22 @@ function tracksFor(b){
   const N=b.name||'___';
   const day=weekdayIn(PT,call), t=timeIn(PT,call), L=b.link||'<link of the call>';
   const videoMsg="Hey "+N+", sending you over this quick video for you to watch before we speak on "+day+
-    ", it kind of goes over everything that we offer. It will just help you get more clarity before we get on the call, and let me know any questions you have from it\n\n"+V+"\n"+TODD+"\n"+WINS;
-  const fu1=[{label:'Pre-call video + Looms',text:videoMsg}];
+    ", this training will exactly show you how you can get off the truck and build $1M tree care business without you being the bottleneck of the entire business\n\nIf you have any questions before our call, feel free to drop them before we speak\n\n"+V;
+  const fu1=[
+    {label:'Message 1 — video',text:videoMsg},
+    {label:'Message 2 — Todd’s Results',text:TODD},
+    {label:'Message 3 — Quick Revenue Wins',text:WINS}];
+  const fu2=[{label:'Message 1',text:"Hey "+N+", are we having the call at "+t+" PT?"}];
   const fu3=[
     {label:'Message 1',text:"Hey "+N+", quick reminder, we have our call within 2 hours, here's the link for you to join: "+L},
     {label:'Message 2',text:"Don't forget to show up on time so we can start our call on your laptop."},
     {label:'Message 3',text:"If there's anything else you need, feel free to let me know"}];
-  const fu2=[{label:'Message 1',text:"Hey "+N+", just to confirm, are we having the call at "+t+" PT?"}];
-  let fus;
-  if(trackB){
-    fus=[{fu:1,off:24,asap:true,msgs:fu1},
-      {fu:2,off:12,msgs:fu2},
-      {fu:3,off:2,msgs:fu3}];
-  } else {
-    fus=[{fu:1,off:36,msgs:fu1},
-      {fu:2,off:12,msgs:fu2},
-      {fu:3,off:2,msgs:fu3}];
-  }
+  const fu4=[{label:'Message 1',text:"Hey mate, here's the link to join our call: "+L}];
+  const fus=[
+    {fu:1,off:24,asap:trackB,msgs:fu1},
+    {fu:2,off:12,msgs:fu2},
+    {fu:3,off:2,msgs:fu3},
+    {fu:4,off:0,msgs:fu4}];
   return {call,track:trackB?'B':'A',fus};
 }
 
@@ -259,7 +259,7 @@ function render(){
         const eid=e.booking.id+'_'+e.fu;
         const open=openSet.has(eid);
         const timeTxt=e.overdue?'now':timeIn(PH,e.realAt);
-        const offTxt=e.asap?'ASAP':(e.off+'h before');
+        const offTxt=e.asap?'ASAP':(e.off===0?'at call time':(e.off+'h before'));
         const msgsHtml=e.msgs.map((m,j)=>{
           const cid=eid+'_'+j;
           return '<div class="msg"><div class="msglabel">'+esc(m.label)+'</div>'+esc(m.text)+
