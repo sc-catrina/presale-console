@@ -203,7 +203,9 @@ function tracksFor(b){
     {label:'Message 1 — How To Build A $1M Tree Care Business Without Being All Day On The Truck',text:videoMsg},
     {label:'Message 2 — From $270k to $1.5M within just ONE year',text:TODD},
     {label:'Message 3 — $34,350 week in just 14 days after working with us',text:WINS}];
-  const fu2=[{label:'Message 1',text:"Hey "+N+", are we having the call at "+t+" PT?"}];
+  const fu2Send=new Date(call.getTime()-12*3600000);
+  const fu2When=dayKey(PT,fu2Send)===dayKey(PT,call)?"today":"tomorrow";
+  const fu2=[{label:'Message 1',text:"Hey "+N+", are we having the call "+fu2When+" at "+t+" PT?"}];
   const fu3=[
     {label:'Message 1',text:"Hey "+N+", quick reminder, we have our call within 2 hours, here's the link for you to join: "+L},
     {label:'Message 2',text:"Don't forget to show up on time so we can start our call on your laptop."},
