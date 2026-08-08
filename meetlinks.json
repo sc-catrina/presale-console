@@ -1,0 +1,33 @@
+{
+  "synced": "2026-08-08",
+  "source": "Slack #booked-calls + #rescheduled-calls (latest link per prospect)",
+  "note": "Keyed by lowercased first name and full name. Reschedules override the original booking.",
+  "map": {
+    "gui": "https://calendly.com/events/9c43db0d-74f1-47d5-abde-2f8558d64b03/google_meet",
+    "gui andrade": "https://calendly.com/events/9c43db0d-74f1-47d5-abde-2f8558d64b03/google_meet",
+    "perry": "https://calendly.com/events/6dc104e5-d9ab-4739-b605-d8adb3f1239a/google_meet",
+    "perry john": "https://calendly.com/events/6dc104e5-d9ab-4739-b605-d8adb3f1239a/google_meet",
+    "zachary": "https://calendly.com/events/f90d7465-2809-4ff1-9bc2-a530dab9c08b/google_meet",
+    "zachary miller": "https://calendly.com/events/f90d7465-2809-4ff1-9bc2-a530dab9c08b/google_meet",
+    "frankie": "https://calendly.com/events/9ec881d6-f1a1-42cd-91b5-7dec320bfe9c/google_meet",
+    "frankie stetts": "https://calendly.com/events/9ec881d6-f1a1-42cd-91b5-7dec320bfe9c/google_meet",
+    "tate": "https://calendly.com/events/654d60bc-2a4b-42bc-a432-a7d12234df5a/google_meet",
+    "tate sheather": "https://calendly.com/events/654d60bc-2a4b-42bc-a432-a7d12234df5a/google_meet",
+    "josh": "https://calendly.com/events/7038fb68-9fff-4ada-b6b4-a55613cc7570/google_meet",
+    "josh bryant": "https://calendly.com/events/7038fb68-9fff-4ada-b6b4-a55613cc7570/google_meet",
+    "ryan": "https://calendly.com/events/1d3cf853-2cec-4b11-803f-0b8d5657231c/google_meet",
+    "ryan hansen": "https://calendly.com/events/1d3cf853-2cec-4b11-803f-0b8d5657231c/google_meet",
+    "longland": "https://calendly.com/events/34246b93-da80-46ae-8d0a-f9d57e444db7/google_meet",
+    "longland james": "https://calendly.com/events/34246b93-da80-46ae-8d0a-f9d57e444db7/google_meet",
+    "alec": "https://calendly.com/events/6dac0e11-2b00-462d-8480-749dcca4ad99/google_meet",
+    "alec hink": "https://calendly.com/events/6dac0e11-2b00-462d-8480-749dcca4ad99/google_meet",
+    "hudson": "https://calendly.com/events/37461b32-1ad6-4d7a-b462-66db4ee06783/google_meet",
+    "hudson montgomery": "https://calendly.com/events/37461b32-1ad6-4d7a-b462-66db4ee06783/google_meet",
+    "graham": "https://calendly.com/events/aabe5134-1411-4b28-90ae-73b21df1a707/google_meet",
+    "graham brauner": "https://calendly.com/events/aabe5134-1411-4b28-90ae-73b21df1a707/google_meet",
+    "little": "https://calendly.com/events/ce6aa5b9-c56c-4b38-9279-0cb2f8a04f40/google_meet",
+    "little bear tree solutions": "https://calendly.com/events/ce6aa5b9-c56c-4b38-9279-0cb2f8a04f40/google_meet",
+    "daywood": "https://calendly.com/events/1230a3e8-0949-4950-836d-2b9f5574e6ed/google_meet",
+    "daywood tree services ltd": "https://calendly.com/events/1230a3e8-0949-4950-836d-2b9f5574e6ed/google_meet"
+  }
+}
