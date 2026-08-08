@@ -85,6 +85,25 @@
   .copy:hover{color:var(--ink);border-color:var(--accent)}.copy.ok{color:var(--accent2);border-color:var(--accent2)}
   .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 6px}
   .rm:hover{color:var(--danger)}
+  .edit{background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;padding:2px 8px;font-weight:600}
+  .edit:hover{text-decoration:underline}
+  .done{background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:12px;cursor:pointer;
+    padding:3px 11px;font-weight:600;border-radius:7px;margin-top:4px;margin-left:6px}
+  .done:hover{color:var(--accent2);border-color:var(--accent2)}
+  .sentwrap{margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
+  .sentbtn{background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;font-weight:700;padding:0}
+  .sentbtn:hover{color:var(--ink)}
+  .sentrow{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid #20242e;font-size:12.5px;color:var(--muted)}
+  .sentrow:last-child{border-bottom:none}
+  .sentrow .undo{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:2px 9px;font-size:11px;cursor:pointer;margin-left:auto}
+  .sentrow .undo:hover{color:var(--accent);border-color:var(--accent)}
+  .editform{display:flex;flex-direction:column;gap:8px;width:100%;padding:4px 0}
+  .editform .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .editform input,.editform select{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+  .editform select{cursor:pointer}
+  .editform .save{background:var(--accent2);border:none;color:#05130d;font-weight:700;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px}
+  .editform .cancel{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px}
   .bkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 2px;border-bottom:1px solid #20242e;font-size:13px}
   .bkrow:last-child{border-bottom:none}
   .empty{color:var(--muted);font-size:13.5px;padding:8px 2px}
@@ -237,7 +256,9 @@ function buildEvents(){
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function render(){
-  const events=buildEvents();
+  const allEvents=buildEvents();
+  const events=allEvents.filter(e=>!doneSet.has(e.booking.id+'_'+e.fu));
+  const doneEvents=allEvents.filter(e=>doneSet.has(e.booking.id+'_'+e.fu));
   const now=new Date();
   document.getElementById('stBookings').textContent=bookings.length;
   document.getElementById('stSends').textContent=events.length;
@@ -245,12 +266,13 @@ function render(){
 
   // agenda grouped by PH day
   const ag=document.getElementById('agenda');
-  if(!events.length){ ag.innerHTML='<div class="empty">Add a booking to see its send schedule here.</div>'; }
+  let agHtml='';
+  if(!events.length){ agHtml='<div class="empty">'+(doneEvents.length?'All sends marked done ✓ — open “Sent” below to undo any.':'Add a booking to see its send schedule here.')+'</div>'; }
   else{
     const groups={}; const order=[];
     events.forEach(e=>{ const k=dayKey(PH,e.realAt); if(!groups[k]){groups[k]=[];order.push(k);} groups[k].push(e); });
     const todayK=dayKey(PH,now);
-    ag.innerHTML=order.map(k=>{
+    agHtml=order.map(k=>{
       const first=groups[k][0].realAt;
       let rel=''; const dd=Math.round((new Date(k+'T00:00')- new Date(todayK+'T00:00'))/86400000);
       // rel via label compare
@@ -280,6 +302,7 @@ function render(){
           '</div>'+
           '<button class="rowcopy" data-eid="'+eid+'">⧉ Copy message'+multi+'</button>'+
           '<button class="toggle" data-eid="'+eid+'">'+(open?'Hide':'Preview')+'</button>'+
+          '<button class="done" data-eid="'+eid+'">✓ Done</button>'+
           '<textarea id="tac_'+eid+'" style="position:absolute;left:-9999px">'+esc(combined)+'</textarea>'+
           '<div class="msgs'+(open?' open':'')+'" id="msgs_'+eid+'">'+msgsHtml+'</div>'+
           '</div></div>';
@@ -288,18 +311,52 @@ function render(){
         (relTxt?'<span class="rel">'+relTxt+'</span>':'')+'</div>'+rows+'</div>';
     }).join('');
   }
+  // sent (done) section — collapsible, with undo
+  if(doneEvents.length){
+    doneEvents.sort((a,b)=>a.realAt-b.realAt);
+    const showSent=openSet.has('__sent__');
+    const sentRows=doneEvents.map(e=>{
+      const eid=e.booking.id+'_'+e.fu; const N=e.booking.name||'(no name)';
+      return '<div class="sentrow"><span class="fubadge fu'+e.fu+'" style="opacity:.75">FU'+e.fu+'</span> '+
+        esc(N)+' · '+dayLabel(PH,e.realAt)+' '+timeIn(PH,e.realAt)+' PH'+
+        '<button class="undo" data-undo="'+eid+'">Undo</button></div>';
+    }).join('');
+    agHtml+='<div class="sentwrap"><button class="sentbtn" id="sentToggle">'+(showSent?'▾':'▸')+' Sent ✓ ('+doneEvents.length+')</button>'+
+      (showSent?'<div style="margin-top:8px">'+sentRows+'</div>':'')+'</div>';
+  }
+  ag.innerHTML=agHtml;
 
   // bookings list
   const bl=document.getElementById('bookings');
   if(!bookings.length){ bl.innerHTML='<div class="empty">No bookings yet — add one above.</div>'; }
   else{
     bl.innerHTML=bookings.map(b=>{
+      if(b.id===editingId){
+        return '<div class="bkrow" style="display:block"><div class="editform">'+
+          '<div class="row">'+
+            '<input type="text" id="ed_name_'+b.id+'" value="'+esc(b.name||'')+'" placeholder="First name" style="flex:1;min-width:120px">'+
+            '<select id="ed_plat_'+b.id+'"><option value="IG"'+(b.platform==='IG'?' selected':'')+'>Instagram</option><option value="FB"'+(b.platform==='FB'?' selected':'')+'>Facebook</option></select>'+
+          '</div>'+
+          '<div class="row">'+
+            '<label style="margin:0">Call · <b>Pacific (PT)</b></label>'+
+            '<input type="datetime-local" id="ed_time_'+b.id+'" value="'+esc(b.callISO||'')+'" style="flex:1;min-width:210px">'+
+          '</div>'+
+          '<div class="row">'+
+            '<input type="text" id="ed_link_'+b.id+'" value="'+esc(b.link||'')+'" placeholder="Call join link (Meet / Zoom) — auto-fills FU3 &amp; FU4" style="flex:1;min-width:220px">'+
+          '</div>'+
+          '<div class="row">'+
+            '<button class="save" data-save="'+b.id+'">Save &amp; recompute</button>'+
+            '<button class="cancel" data-cancel="'+b.id+'">Cancel</button>'+
+          '</div>'+
+        '</div></div>';
+      }
       const T=tracksFor(b);
       const call=T?T.call:null;
       const when=call?dayLabel(PH,call)+' '+timeIn(PH,call)+' PH':'(invalid time)';
       const tr=T?('Track '+T.track):'';
-      return '<div class="bkrow"><span>'+esc(b.name||'(no name)')+' · '+b.platform+' · call '+when+' · '+tr+
-        '</span><button class="rm" data-rm="'+b.id+'">remove</button></div>';
+      const linkTxt=b.link?' · <span class="muted">link ✓</span>':' · <span class="muted">no link</span>';
+      return '<div class="bkrow"><span>'+esc(b.name||'(no name)')+' · '+b.platform+' · call '+when+' · '+tr+linkTxt+
+        '</span><span style="white-space:nowrap"><button class="edit" data-ed="'+b.id+'">edit</button><button class="rm" data-rm="'+b.id+'">remove</button></span></div>';
     }).join('');
   }
 
@@ -317,9 +374,40 @@ function render(){
   ag.querySelectorAll('.rowcopy').forEach(btn=>btn.addEventListener('click',()=>{
     const ta=document.getElementById('tac_'+btn.dataset.eid); copyFrom(ta,btn);
   }));
+  // wire done (mark a send as sent → hides it from the schedule)
+  ag.querySelectorAll('.done').forEach(btn=>btn.addEventListener('click',()=>{
+    const eid=btn.dataset.eid; doneSet.add(eid);
+    const p=eid.split('_'); alerted.add('a'+p[0]+'_'+p[1]); saveAlerted(); // don't alarm a sent one
+    saveDone(); render();
+  }));
+  // wire undo (bring a sent one back)
+  ag.querySelectorAll('.undo').forEach(btn=>btn.addEventListener('click',()=>{
+    const eid=btn.dataset.undo; doneSet.delete(eid);
+    const p=eid.split('_'); alerted.delete('a'+p[0]+'_'+p[1]); saveAlerted();
+    saveDone(); render();
+  }));
+  // wire sent-section toggle
+  const st=document.getElementById('sentToggle');
+  if(st) st.addEventListener('click',()=>{ if(openSet.has('__sent__'))openSet.delete('__sent__'); else openSet.add('__sent__'); render(); });
+  // wire edit
+  bl.querySelectorAll('.edit').forEach(b=>b.addEventListener('click',()=>{ editingId=+b.dataset.ed; render();
+    const f=document.getElementById('ed_time_'+editingId); if(f) f.focus(); }));
+  bl.querySelectorAll('.cancel').forEach(b=>b.addEventListener('click',()=>{ editingId=null; render(); }));
+  bl.querySelectorAll('.save').forEach(b=>b.addEventListener('click',()=>{
+    const id=+b.dataset.save; const bk=bookings.find(x=>x.id===id); if(!bk) return;
+    const tm=document.getElementById('ed_time_'+id).value;
+    if(!tm){ document.getElementById('ed_time_'+id).focus(); return; }
+    const changedTime=(tm!==bk.callISO);
+    bk.name=document.getElementById('ed_name_'+id).value.trim();
+    bk.platform=document.getElementById('ed_plat_'+id).value;
+    bk.callISO=tm;
+    bk.link=document.getElementById('ed_link_'+id).value.trim();
+    if(changedTime) clearBookingState(id); // reschedule → resurface this booking's sends so nothing is missed
+    editingId=null; saveBookings(); render();
+  }));
   // wire removes
   bl.querySelectorAll('.rm').forEach(b=>b.addEventListener('click',()=>{
-    bookings=bookings.filter(x=>x.id!=b.dataset.rm); saveBookings(); render();}));
+    const id=+b.dataset.rm; bookings=bookings.filter(x=>x.id!==id); clearBookingState(id); saveBookings(); render();}));
 }
 function flash(btn){const o=btn.textContent;btn.textContent='Copied ✓';btn.classList.add('ok');
   setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok');},1300);}
@@ -353,6 +441,17 @@ document.getElementById('add').addEventListener('click',()=>{
 function saveBookings(){try{localStorage.setItem('marcel_precall_v1',JSON.stringify({bookings:bookings,seq:seq}));}catch(e){}}
 function loadBookings(){try{const s=localStorage.getItem('marcel_precall_v1'); if(s){const o=JSON.parse(s); bookings=(o.bookings||[]); seq=o.seq||1;}}catch(e){}}
 loadBookings();
+
+// ---- sent-tracking + editing state ----
+let editingId=null;
+let doneSet=new Set();
+try{const d=localStorage.getItem('marcel_precall_done'); if(d) doneSet=new Set(JSON.parse(d));}catch(e){}
+function saveDone(){try{localStorage.setItem('marcel_precall_done',JSON.stringify([...doneSet]));}catch(e){}}
+function clearBookingState(id){
+  [...doneSet].forEach(k=>{ if(k.indexOf(id+'_')===0) doneSet.delete(k); });
+  [...alerted].forEach(k=>{ if(k.indexOf('a'+id+'_')===0) alerted.delete(k); });
+  saveDone(); saveAlerted();
+}
 
 // ---- alerts / alarm (works while this tab is open) ----
 let alerted=new Set();
@@ -389,6 +488,7 @@ document.getElementById('alertBtn').addEventListener('click',()=>{
 function checkDue(silent){
   const now=new Date();
   buildEvents().forEach(e=>{ const key='a'+e.booking.id+'_'+e.fu;
+    if(doneSet.has(e.booking.id+'_'+e.fu)) return;
     if(e.realAt<=now && !alerted.has(key)){ alerted.add(key);
       if(!silent){ const N=e.booking.name||'(no name)';
         notify('Pre-call send due — '+N, 'Send FU'+e.fu+' now · '+(e.booking.platform==='IG'?'Instagram':'Facebook')+' · '+e.track); }
